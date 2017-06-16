@@ -8,8 +8,12 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /templates/.*
+  script: templates.app
+
 - url: /.*
   script: blog.app
+
 
 libraries:
 - name: jinja2
