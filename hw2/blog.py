@@ -8,12 +8,14 @@ import jinja2
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-                               autoescape = True)
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
+                               autoescape=True)
+
 
 def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
+
 
 class BaseHandler(webapp2.RequestHandler):
     def render(self, template, **kw):
@@ -21,6 +23,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
+
 
 class Rot13(BaseHandler):
     def get(self):
@@ -36,19 +39,23 @@ class Rot13(BaseHandler):
 
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+PASS_RE = re.compile(r"^.{3,20}$")
+EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
+
 def valid_username(username):
     return username and USER_RE.match(username)
 
-PASS_RE = re.compile(r"^.{3,20}$")
+
 def valid_password(password):
     return password and PASS_RE.match(password)
 
-EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
-class Signup(BaseHandler):
 
+class Signup(BaseHandler):
     def get(self):
         self.render("signup-form.html")
 
@@ -59,8 +66,8 @@ class Signup(BaseHandler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        params = dict(username = username,
-                      email = email)
+        params = dict(username=username,
+                      email=email)
 
         if not valid_username(username):
             params['error_username'] = "That's not a valid username."
@@ -82,20 +89,22 @@ class Signup(BaseHandler):
         else:
             self.redirect('/unit2/welcome?username=' + username)
 
+
 class Welcome(BaseHandler):
     def get(self):
         username = self.request.get('username')
         if valid_username(username):
-            self.render('welcome.html', username = username)
+            self.render('welcome.html', username=username)
         else:
             self.redirect('/unit2/signup')
+
 
 class Main(BaseHandler):
     def get(self):
         self.render("index.html", signup ="/unit2/signup", rot13 ="/unit2/rot13")
 
 
-app = webapp2.WSGIApplication([('/',Main),
+app = webapp2.WSGIApplication([('/', Main),
                                 ('/unit2/rot13', Rot13),
                                ('/unit2/signup', Signup),
                                ('/unit2/welcome', Welcome)],
